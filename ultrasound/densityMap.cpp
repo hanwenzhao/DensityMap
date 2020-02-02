@@ -4,8 +4,10 @@
 DensityMap::DensityMap(int dim) {
 	this->dim = dim;
 
-	radius = 6;
+	// Radius of cells affected by DensityMap::addLine()
+	radius = dim / 20 + 1;
 
+	// Initializing the array and filling it with zeroes
 	for (int i = 0; i < dim; i++) {
 		cells.push_back(std::vector<std::vector<float>>{});
 
@@ -19,27 +21,43 @@ DensityMap::DensityMap(int dim) {
 	}
 }
 
+void DensityMap::clear() {
+	// Fills the whole array with zeroes
+
+	for (int i = 0; i < dim; i++) {
+		for (int j = 0; j < dim; j++) {
+			for (int k = 0; k < dim; k++) {
+				cells[i][j][k] = 0;
+			}
+		}
+	}
+}
+
 void DensityMap::addLine(glm::vec3 p1, glm::vec3 p2, std::vector<float> vals) {
 	int numVals = vals.size();
 
+	// x, y, and z coordinates of the current data point
+	// Moves along the line defined by p1 and p2
 	float x = p1.x;
 	float y = p1.y;
 	float z = p1.z;
 
+	// Direction of the line defined by p1 and p2
 	float dx = (p2.x - p1.x) / numVals;
 	float dy = (p2.y - p1.y) / numVals;
 	float dz = (p2.z - p1.z) / numVals;
 
 	for (int i = 0; i < numVals; i++) {
-		// sphere around the current segment
-
+		// Cell index determined by x, y, and z
 		int ix = x * dim;
 		int iy = y * dim;
 		int iz = z * dim;
 
+		// Iterates through a cube around (ix, iy, iz)
 		for (int rx = -radius; rx <= radius; rx++) {
 			for (int ry = -radius; ry <= radius; ry++) {
 				for (int rz = -radius; rz <= radius; rz++) {
+					// Disregards cells out of bounds
 					if (ix + rx < 0 || ix + rx >= dim ||
 						iy + ry < 0 || iy + ry >= dim ||
 						iz + rz < 0 || iz + rz >= dim) {
@@ -47,22 +65,28 @@ void DensityMap::addLine(glm::vec3 p1, glm::vec3 p2, std::vector<float> vals) {
 						continue;
 					}
 
-					if (sqrt(rx * rx + ry * ry + rz * rz) > radius) {
+					// Disregards cells outside of the sphere
+					if (rx * rx + ry * ry + rz * rz > radius * radius) {
 						continue;
 					}
 
+					// Finds the position of the cell about to be modified
 					float absx = x * dim + float(rx);
 					float absy = y * dim + float(ry);
 					float absz = z * dim + float(rz);
 
+					// The distance between (absx, absy, absz) and (ix, iy, iz)
 					float distance = sqrt(pow(absx - ix, 2) + pow(absy - iy, 2) + pow(absz - iz, 2));
 
+					// The index of the cell about to be modified
 					int px = ix + rx;
 					int py = iy + ry;
 					int pz = iz + rz;
 
+					// The brightness of the cell
 					float n = pow(1.25, -distance);
 
+					// Does not turn bright cells darker
 					if (cells[px][py][pz] < n) {
 						cells[px][py][pz] = n;
 					}
@@ -70,12 +94,14 @@ void DensityMap::addLine(glm::vec3 p1, glm::vec3 p2, std::vector<float> vals) {
 			}
 		}
 
+		// Move x, y, and z along the line
 		x += dx;
 		y += dy;
 		z += dz;
 	}
 }
 
+// Returns the vertices in a form useful to OpenGL
 std::vector<float> DensityMap::getVertices() {
 	std::vector<float> vertices;
 
