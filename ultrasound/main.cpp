@@ -308,7 +308,7 @@ void sphereDemo(DensityMap& grid) {
 
 void fanDemo(DensityMap& grid) {
 	// Adds a fan shape to the volume map
-	// using the DensityMap.addLine() function
+	// using the DensityMap::addLine() function
 
 	glm::vec3 vertex = { 0.5, 0.5, 0.5 };
 
