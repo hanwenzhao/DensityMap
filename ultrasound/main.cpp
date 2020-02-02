@@ -13,8 +13,11 @@
 
 #define PI 3.141592653589
 
+// If this is false, then the application will run in windowed mode
+// If this is true, then the application will run in fullscren mode
 #define FULLSCREEN 0
 
+// Adjust these numbers depending on your monitor resolution
 #if FULLSCREEN
 #define SCR_WIDTH 1920
 #define SCR_HEIGHT 1080
@@ -23,53 +26,68 @@
 #define SCR_HEIGHT 600
 #endif
 
+// Keyboard and mouse input functions
 void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
-void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void processKeyboardInput(GLFWwindow* window);
 
+// Demo functions to show what the volume map looks like
 void sphereDemo(DensityMap& grid);
 void fanDemo(DensityMap& grid);
 
+// Used in the mouse movement callback
 struct MouseData {
 	double lastMouseX;
 	double lastMouseY;
 	bool firstMouse;
 };
 
+// Creating a Camera object
 Camera cam;
 
 int main() {
-	std::string windowTitle = "OpenGL";
+	// Window title
+	std::string windowTitle = "Ultrasound";
 
+	// Initializing the OpenGL context
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	// Creating the window object
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, windowTitle.c_str(), FULLSCREEN ? glfwGetPrimaryMonitor() : NULL, NULL);
 	
+	// If the window is not created (for any reason)
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
 
+	// Setting callbacks
 	glfwMakeContextCurrent(window);
 	glfwSetCursorPosCallback(window, cursorPosCallback);
-	glfwSetScrollCallback(window, scrollCallback);
 
+	// Lock the cursor to the center of the window
+	// and make it invisible
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
+	// Load the OpenGL functions from the graphics card
 	if (!gladLoadGLLoader(GLADloadproc(glfwGetProcAddress))) {
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
+	// Creating the shaders for the cells in the cube
+	// and for the lines of the border of the cube
 	Shader cellShader("cells.vs", "cells.fs");
 	Shader lineShader("lines.vs", "lines.fs");
 
-	double lastRenderCall = 0.0;
+	// Allows blending (translucent drawing)
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	// Initializing mouse info
 	MouseData mouseData;
 	mouseData.lastMouseX = SCR_WIDTH / 2.0;
 	mouseData.lastMouseY = SCR_HEIGHT / 2.0;
@@ -77,14 +95,19 @@ int main() {
 
 	glfwSetWindowUserPointer(window, &mouseData);
 	
-	int dim = 101;
+	// Creating the density map
+	int dim = 31;
 	DensityMap grid(dim);
-	sphereDemo(grid);
 
+	// (Optional) Adds a fan-shaped arrangement of cells to the volume map
+	fanDemo(grid);
+
+	// Get the vertices from the volume map
+	// in a form useful to OpenGL
 	std::vector<float> cellVertices = grid.getVertices();
 	
-	// cells
-
+	// Initializing the buffer storing the vertices
+	// of the volume map on the graphics card
 	unsigned int cellVAO, cellVBO;
 	glGenBuffers(1, &cellVBO);
 	glGenVertexArrays(1, &cellVAO);
@@ -100,8 +123,8 @@ int main() {
 	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	// cube borders
-
+	// Array containing the coordinates of the vertices
+	// of the white lines
 	float lines[72] = {
 		-5, -5, -5,
 		 5, -5, -5,
@@ -144,6 +167,8 @@ int main() {
 		 5,  5,  5,
 	};
 
+	// Initializing the buffer storing the vertices
+	// of the white lines on the graphics card
 	unsigned int lineVAO, lineVBO;
 	glGenBuffers(1, &lineVBO);
 	glGenVertexArrays(1, &lineVAO);
@@ -156,26 +181,27 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(0);
 
+	// Main event loop
 	while (!glfwWindowShouldClose(window)) {
 		double currentFrame = glfwGetTime();
 		cam.deltaTime = currentFrame - cam.lastFrame;
 		cam.lastFrame = currentFrame;
 
+		// Self-explanatory
 		processKeyboardInput(window);
 
+		// Clears the screen and fills it a dark grey color
 		glClearColor(0.1, 0.1, 0.1, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT);
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+		// Creating matrices to transform the vertices into NDC (screen) coordinates
+		// between -1 and 1 that OpenGL can use
 		glm::dmat4 projection = glm::perspective(glm::radians(cam.fov), double(SCR_WIDTH) / SCR_HEIGHT, 0.01, 500.0);
 		glm::dmat4 camView = cam.getViewMatrix();
 		glm::dmat4 model = glm::scale(glm::dmat4{}, glm::dvec3(10.0 / (grid.dim - 1), 10.0 / (grid.dim - 1), 10.0 / (grid.dim - 1)));
 		model = glm::translate(model, glm::dvec3(-(grid.dim - 1) / 2.0, -(grid.dim - 1) / 2.0, -(grid.dim - 1) / 2.0));
 
-		// cells
-
+		// Drawing the volume map
 		cellShader.use();
 		cellShader.setMat4("projection", projection);
 		cellShader.setMat4("view", camView);
@@ -184,8 +210,7 @@ int main() {
 		glBindVertexArray(cellVAO);
 		glDrawArrays(GL_TRIANGLES, 0, cellVertices.size() / 4);
 
-		// cube borders
-
+		// Drawing the white lines
 		lineShader.use();
 		lineShader.setMat4("projection", projection);
 		lineShader.setMat4("view", camView);
@@ -196,24 +221,23 @@ int main() {
 
 		cam.prevPos = cam.position;
 
+		// Update the screen
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		
-		double dt = glfwGetTime() - lastRenderCall;
-		lastRenderCall = glfwGetTime();
-		int fps = 0;
-
-		glfwSetWindowTitle(window, (windowTitle + " (" + std::to_string(fps) + " FPS)").c_str());
 	}
 
+	// GLFW cleanup
 	glfwTerminate();
 
+	// Stops the window from closing immediately
 	system("pause");
 }
 
 void processKeyboardInput(GLFWwindow *window) {
+	// If shift is held down, then the camera moves faster
 	bool sprinting = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
 
+	// WASD + Q and E movement
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE))
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W))
@@ -229,6 +253,7 @@ void processKeyboardInput(GLFWwindow *window) {
 	if (glfwGetKey(window, GLFW_KEY_E))
 		cam.processKeyboard(UP, sprinting);
 
+	// Hold C to zoom in
 	if (glfwGetKey(window, GLFW_KEY_C)) {
 		cam.fov = 30;
 	}
@@ -240,12 +265,14 @@ void processKeyboardInput(GLFWwindow *window) {
 void cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
 	MouseData& mouseData = *(MouseData*)glfwGetWindowUserPointer(window);
 
+	// Ensures that the viewer faces forward on startup
 	if (mouseData.firstMouse) {
 		mouseData.lastMouseX = xpos;
 		mouseData.lastMouseY = ypos;
 		mouseData.firstMouse = false;
 	}
 
+	// Updating the camera angle
 	double xoffset = xpos - mouseData.lastMouseX;
 	double yoffset = mouseData.lastMouseY - ypos;
 	mouseData.lastMouseX = xpos;
@@ -254,11 +281,9 @@ void cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
 	cam.processMouseMovement(xoffset, yoffset);
 }
 
-void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-	cam.zoom(yoffset);
-}
-
 void sphereDemo(DensityMap& grid) {
+	// Adds a sphere to the center of the volume map
+
 	for (int i = 0; i < grid.dim; i++) {
 		for (int j = 0; j < grid.dim; j++) {
 			for (int k = 0; k < grid.dim; k++) {
@@ -282,6 +307,9 @@ void sphereDemo(DensityMap& grid) {
 }
 
 void fanDemo(DensityMap& grid) {
+	// Adds a fan shape to the volume map
+	// using the DensityMap.addLine() function
+
 	glm::vec3 vertex = { 0.5, 0.5, 0.5 };
 
 	float a1 = 1;
