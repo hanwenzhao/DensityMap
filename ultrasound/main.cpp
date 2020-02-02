@@ -96,7 +96,7 @@ int main() {
 	glfwSetWindowUserPointer(window, &mouseData);
 	
 	// Creating the density map
-	int dim = 31;
+	int dim = 101;
 	DensityMap grid(dim);
 
 	// (Optional) Adds a fan-shaped arrangement of cells to the volume map
