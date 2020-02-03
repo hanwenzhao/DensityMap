@@ -30,6 +30,13 @@
 void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
 void processKeyboardInput(GLFWwindow* window);
 
+// Updates the vertices on the graphics card
+// -----
+// This function is pretty slow right now (a few hundred milliseconds)
+// because it writes several megabytes of data at once to the graphics card,
+// but it will be optimized soon
+void updateVertexBuffer(unsigned int& VBO, DensityMap& grid);
+
 // Demo functions to show what the volume map looks like
 void sphereDemo(DensityMap& grid);
 void fanDemo(DensityMap& grid);
@@ -96,7 +103,7 @@ int main() {
 	glfwSetWindowUserPointer(window, &mouseData);
 	
 	// Creating the density map
-	int dim = 101;
+	int dim = 21;
 	DensityMap grid(dim);
 
 	// (Optional) Adds a fan-shaped arrangement of cells to the volume map
@@ -330,4 +337,13 @@ void fanDemo(DensityMap& grid) {
 
 		grid.addLine(vertex, vertex + glm::vec3(x, y, z), vals);
 	}
+}
+
+void updateVertexBuffer(unsigned int& VBO, DensityMap& grid) {
+	// Gets the vertices from the density map
+	std::vector<float> vertices = grid.getVertices();
+
+	// Writes the vertices to the vertex buffer on the graphics card
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
 }
