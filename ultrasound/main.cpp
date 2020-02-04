@@ -27,7 +27,8 @@
 #endif
 
 // Keyboard and mouse input functions
-void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
+void cursorPosMovementCallback(GLFWwindow* window, double xpos, double ypos);
+void cursorPosRotationCallback(GLFWwindow* window, double xpos, double ypos);
 void processKeyboardInput(GLFWwindow* window);
 
 // Updates the vertices on the graphics card
@@ -42,11 +43,9 @@ void sphereDemo(DensityMap& grid);
 void fanDemo(DensityMap& grid);
 
 // Used in the mouse movement callback
-struct MouseData {
-	double lastMouseX;
-	double lastMouseY;
-	bool firstMouse;
-};
+double lastMouseX;
+double lastMouseY;
+bool firstMouse;
 
 // Creating a Camera object
 Camera cam;
@@ -73,7 +72,7 @@ int main() {
 
 	// Setting callbacks
 	glfwMakeContextCurrent(window);
-	glfwSetCursorPosCallback(window, cursorPosCallback);
+	glfwSetCursorPosCallback(window, cursorPosMovementCallback);
 
 	// Lock the cursor to the center of the window
 	// and make it invisible
@@ -95,13 +94,10 @@ int main() {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Initializing mouse info
-	MouseData mouseData;
-	mouseData.lastMouseX = SCR_WIDTH / 2.0;
-	mouseData.lastMouseY = SCR_HEIGHT / 2.0;
-	mouseData.firstMouse = true;
+	lastMouseX = SCR_WIDTH / 2.0;
+	lastMouseY = SCR_HEIGHT / 2.0;
+	firstMouse = true;
 
-	glfwSetWindowUserPointer(window, &mouseData);
-	
 	// Creating the density map
 	int dim = 101;
 	DensityMap grid(dim);
@@ -278,21 +274,19 @@ void processKeyboardInput(GLFWwindow *window) {
 	}
 }
 
-void cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
-	MouseData& mouseData = *(MouseData*)glfwGetWindowUserPointer(window);
-
+void cursorPosMovementCallback(GLFWwindow* window, double xpos, double ypos) {
 	// Ensures that the viewer faces forward on startup
-	if (mouseData.firstMouse) {
-		mouseData.lastMouseX = xpos;
-		mouseData.lastMouseY = ypos;
-		mouseData.firstMouse = false;
+	if (firstMouse) {
+		lastMouseX = xpos;
+		lastMouseY = ypos;
+		firstMouse = false;
 	}
 
 	// Updating the camera angle
-	double xoffset = xpos - mouseData.lastMouseX;
-	double yoffset = mouseData.lastMouseY - ypos;
-	mouseData.lastMouseX = xpos;
-	mouseData.lastMouseY = ypos;
+	double xoffset = xpos - lastMouseX;
+	double yoffset = lastMouseY - ypos;
+	lastMouseX = xpos;
+	lastMouseY = ypos;
 
 	cam.processMouseMovement(xoffset, yoffset);
 }
