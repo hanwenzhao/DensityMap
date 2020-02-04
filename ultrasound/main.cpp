@@ -107,27 +107,36 @@ int main() {
 	DensityMap grid(dim);
 
 	// (Optional) Adds a fan-shaped arrangement of cells to the volume map
-	fanDemo(grid);
+	sphereDemo(grid);
 
 	// Get the vertices from the volume map
 	// in a form useful to OpenGL
-	std::vector<float> cellVertices = grid.getVertices();
+	std::vector<float> cellPositions = grid.getVertices();
+	std::vector<float> cellDensities = grid.getDensities();
 	
-	// Initializing the buffer storing the vertices
+	// Initializing the buffers storing the vertices
 	// of the volume map on the graphics card
-	unsigned int cellVAO, cellVBO;
-	glGenBuffers(1, &cellVBO);
+	unsigned int cellVAO, cellPositionVBO, cellDensityVBO;
+	glGenBuffers(1, &cellPositionVBO);
+	glGenBuffers(1, &cellDensityVBO);
 	glGenVertexArrays(1, &cellVAO);
 
 	glBindVertexArray(cellVAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, cellVBO);
-	glBufferData(GL_ARRAY_BUFFER, cellVertices.size() * sizeof(float), cellVertices.data(), GL_STATIC_DRAW);
+	// Cell positions
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+	glBindBuffer(GL_ARRAY_BUFFER, cellPositionVBO);
+	glBufferData(GL_ARRAY_BUFFER, cellPositions.size() * sizeof(float), cellPositions.data(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(3 * sizeof(float)));
+	// Data in each cell
+
+	glBindBuffer(GL_ARRAY_BUFFER, cellDensityVBO);
+	glBufferData(GL_ARRAY_BUFFER, cellDensities.size() * sizeof(float), cellDensities.data(), GL_STATIC_DRAW);
+	
+	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(float), 0);
 	glEnableVertexAttribArray(1);
 
 	// Array containing the coordinates of the vertices
@@ -188,11 +197,19 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(0);
 
+	bool x = false;
+
 	// Main event loop
 	while (!glfwWindowShouldClose(window)) {
 		double currentFrame = glfwGetTime();
 		cam.deltaTime = currentFrame - cam.lastFrame;
 		cam.lastFrame = currentFrame;
+
+		if (glfwGetTime() > 3 && !x) {
+			grid.clear();
+			updateVertexBuffer(cellDensityVBO, grid);
+			x = true;
+		}
 
 		// Self-explanatory
 		processKeyboardInput(window);
@@ -215,7 +232,7 @@ int main() {
 		cellShader.setMat4("model", model);
 
 		glBindVertexArray(cellVAO);
-		glDrawArrays(GL_TRIANGLES, 0, cellVertices.size() / 4);
+		glDrawArrays(GL_TRIANGLES, 0, cellDensities.size());
 
 		// Drawing the white lines
 		lineShader.use();
@@ -341,9 +358,9 @@ void fanDemo(DensityMap& grid) {
 
 void updateVertexBuffer(unsigned int& VBO, DensityMap& grid) {
 	// Gets the vertices from the density map
-	std::vector<float> vertices = grid.getVertices();
+	std::vector<float> densities = grid.getDensities();
 
 	// Writes the vertices to the vertex buffer on the graphics card
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
+	glBufferSubData(GL_ARRAY_BUFFER, 0, densities.size() * sizeof(float), densities.data());
 }

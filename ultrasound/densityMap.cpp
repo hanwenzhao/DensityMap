@@ -108,18 +108,18 @@ std::vector<float> DensityMap::getVertices() {
 	for (int i = 0; i < dim - 1; i++) {
 		for (int j = 0; j < dim - 1; j++) {
 			for (int k = 0; k < dim; k++) {
-				float v1[4] = { i, j, k,			cells[i][j][k] };
-				float v2[4] = { i + 1, j, k,		cells[i + 1][j][k] };
-				float v3[4] = { i, j + 1, k,		cells[i][j + 1][k] };
-				float v4[4] = { i + 1, j + 1, k,	cells[i + 1][j + 1][k] };
+				float v1[3] = { i, j, k };
+				float v2[3] = { i + 1, j, k };
+				float v3[3] = { i, j + 1, k };
+				float v4[3] = { i + 1, j + 1, k };
 
-				vertices.insert(vertices.end(), v1, v1 + 4);
-				vertices.insert(vertices.end(), v2, v2 + 4);
-				vertices.insert(vertices.end(), v4, v4 + 4);
+				vertices.insert(vertices.end(), v1, v1 + 3);
+				vertices.insert(vertices.end(), v2, v2 + 3);
+				vertices.insert(vertices.end(), v4, v4 + 3);
 
-				vertices.insert(vertices.end(), v1, v1 + 4);
-				vertices.insert(vertices.end(), v3, v3 + 4);
-				vertices.insert(vertices.end(), v4, v4 + 4);
+				vertices.insert(vertices.end(), v1, v1 + 3);
+				vertices.insert(vertices.end(), v3, v3 + 3);
+				vertices.insert(vertices.end(), v4, v4 + 3);
 			}
 		}
 	}
@@ -127,18 +127,18 @@ std::vector<float> DensityMap::getVertices() {
 	for (int i = 0; i < dim - 1; i++) {
 		for (int j = 0; j < dim; j++) {
 			for (int k = 0; k < dim - 1; k++) {
-				float v1[4] = { i,j, k,				cells[i][j][k] };
-				float v2[4] = { i + 1, j, k,		cells[i + 1][j][k] };
-				float v3[4] = { i, j, k + 1,		cells[i][j][k + 1] };
-				float v4[4] = { i + 1, j, k + 1,	cells[i + 1][j][k + 1] };
+				float v1[3] = { i,j, k };
+				float v2[3] = { i + 1, j, k };
+				float v3[3] = { i, j, k + 1 };
+				float v4[3] = { i + 1, j, k + 1 };
 
-				vertices.insert(vertices.end(), v1, v1 + 4);
-				vertices.insert(vertices.end(), v2, v2 + 4);
-				vertices.insert(vertices.end(), v4, v4 + 4);
+				vertices.insert(vertices.end(), v1, v1 + 3);
+				vertices.insert(vertices.end(), v2, v2 + 3);
+				vertices.insert(vertices.end(), v4, v4 + 3);
 
-				vertices.insert(vertices.end(), v1, v1 + 4);
-				vertices.insert(vertices.end(), v3, v3 + 4);
-				vertices.insert(vertices.end(), v4, v4 + 4);
+				vertices.insert(vertices.end(), v1, v1 + 3);
+				vertices.insert(vertices.end(), v3, v3 + 3);
+				vertices.insert(vertices.end(), v4, v4 + 3);
 			}
 		}
 	}
@@ -146,23 +146,87 @@ std::vector<float> DensityMap::getVertices() {
 	for (int i = 0; i < dim; i++) {
 		for (int j = 0; j < dim - 1; j++) {
 			for (int k = 0; k < dim - 1; k++) {
-				float v1[4] = { i, j, k,			cells[i][j][k] };
-				float v2[4] = { i, j + 1, k,		cells[i][j + 1][k] };
-				float v3[4] = { i, j, k + 1,		cells[i][j][k + 1] };
-				float v4[4] = { i, j + 1, k + 1,	cells[i][j + 1][k + 1] };
+				float v1[3] = { i, j, k };
+				float v2[3] = { i, j + 1, k };
+				float v3[3] = { i, j, k + 1 };
+				float v4[3] = { i, j + 1, k + 1 };
 
-				vertices.insert(vertices.end(), v1, v1 + 4);
-				vertices.insert(vertices.end(), v2, v2 + 4);
-				vertices.insert(vertices.end(), v4, v4 + 4);
+				vertices.insert(vertices.end(), v1, v1 + 3);
+				vertices.insert(vertices.end(), v2, v2 + 3);
+				vertices.insert(vertices.end(), v4, v4 + 3);
 
-				vertices.insert(vertices.end(), v1, v1 + 4);
-				vertices.insert(vertices.end(), v3, v3 + 4);
-				vertices.insert(vertices.end(), v4, v4 + 4);
+				vertices.insert(vertices.end(), v1, v1 + 3);
+				vertices.insert(vertices.end(), v3, v3 + 3);
+				vertices.insert(vertices.end(), v4, v4 + 3);
 			}
 		}
 	}
 
 	return vertices;
+}
+
+// Returns the cell densities
+std::vector<float> DensityMap::getDensities() {
+	std::vector<float> densities;
+
+	for (int i = 0; i < dim - 1; i++) {
+		for (int j = 0; j < dim - 1; j++) {
+			for (int k = 0; k < dim; k++) {
+				float d1 = cells[i][j][k];
+				float d2 = cells[i + 1][j][k];
+				float d3 = cells[i][j + 1][k];
+				float d4 = cells[i + 1][j + 1][k];
+
+				densities.push_back(d1);
+				densities.push_back(d2);
+				densities.push_back(d4);
+
+				densities.push_back(d1);
+				densities.push_back(d3);
+				densities.push_back(d4);
+			}
+		}
+	}
+
+	for (int i = 0; i < dim - 1; i++) {
+		for (int j = 0; j < dim; j++) {
+			for (int k = 0; k < dim - 1; k++) {
+				float d1 = cells[i][j][k];
+				float d2 = cells[i + 1][j][k];
+				float d3 = cells[i][j][k + 1];
+				float d4 = cells[i + 1][j][k + 1];
+
+				densities.push_back(d1);
+				densities.push_back(d2);
+				densities.push_back(d4);
+
+				densities.push_back(d1);
+				densities.push_back(d3);
+				densities.push_back(d4);
+			}
+		}
+	}
+
+	for (int i = 0; i < dim; i++) {
+		for (int j = 0; j < dim - 1; j++) {
+			for (int k = 0; k < dim - 1; k++) {
+				float d1 = cells[i][j][k];
+				float d2 = cells[i][j + 1][k];
+				float d3 = cells[i][j][k + 1];
+				float d4 = cells[i][j + 1][k + 1];
+
+				densities.push_back(d1);
+				densities.push_back(d2);
+				densities.push_back(d4);
+
+				densities.push_back(d1);
+				densities.push_back(d3);
+				densities.push_back(d4);
+			}
+		}
+	}
+
+	return densities;
 }
 
 // Not being used right now, but maybe in the future

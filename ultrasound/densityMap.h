@@ -25,6 +25,9 @@ public:
 
 	// Returns the vertices in a form useful to OpenGL
 	std::vector<float> getVertices();
+
+	// Returns the cell densities
+	std::vector<float> getDensities();
 };
 
 // Not being used right now, but maybe in the future
