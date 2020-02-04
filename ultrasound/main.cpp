@@ -197,19 +197,11 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(0);
 
-	bool x = false;
-
 	// Main event loop
 	while (!glfwWindowShouldClose(window)) {
 		double currentFrame = glfwGetTime();
 		cam.deltaTime = currentFrame - cam.lastFrame;
 		cam.lastFrame = currentFrame;
-
-		if (glfwGetTime() > 3 && !x) {
-			grid.clear();
-			updateVertexBuffer(cellDensityVBO, grid);
-			x = true;
-		}
 
 		// Self-explanatory
 		processKeyboardInput(window);
