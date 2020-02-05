@@ -24,3 +24,5 @@ Fills the whole array with zeroes.
 
 <b>std::vector&lt;float&gt; getVertices()</b>  
 Returns a vector of vertices used to render the density map using OpenGL.
+
+![The image is in the images folder](https://github.com/ethanlipson/DensityMap/raw/master/images/sphere.png "Sphere demo")
