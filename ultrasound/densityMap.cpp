@@ -4,9 +4,6 @@
 DensityMap::DensityMap(int dim) {
 	this->dim = dim;
 
-	// Radius of cells affected by DensityMap::addLine()
-	radius = dim / 20 + 1;
-
 	// Initializing the array and filling it with zeroes
 	for (int i = 0; i < dim; i++) {
 		cells.push_back(std::vector<std::vector<float>>{});
@@ -33,7 +30,7 @@ void DensityMap::clear() {
 	}
 }
 
-void DensityMap::addLine(glm::vec3 p1, glm::vec3 p2, std::vector<float> vals) {
+void DensityMap::addLineSmoothed(glm::vec3 p1, glm::vec3 p2, std::vector<float> vals, int radius) {
 	int numVals = vals.size();
 
 	// x, y, and z coordinates of the current data point
@@ -93,6 +90,36 @@ void DensityMap::addLine(glm::vec3 p1, glm::vec3 p2, std::vector<float> vals) {
 				}
 			}
 		}
+
+		// Move x, y, and z along the line
+		x += dx;
+		y += dy;
+		z += dz;
+	}
+}
+
+void DensityMap::addLine(glm::vec3 p1, glm::vec3 p2, std::vector<float> vals) {
+	int numVals = vals.size();
+
+	// x, y, and z coordinates of the current data point
+	// Moves along the line defined by p1 and p2
+	float x = p1.x;
+	float y = p1.y;
+	float z = p1.z;
+
+	// Direction of the line defined by p1 and p2
+	float dx = (p2.x - p1.x) / numVals;
+	float dy = (p2.y - p1.y) / numVals;
+	float dz = (p2.z - p1.z) / numVals;
+
+	for (int i = 0; i < numVals; i++) {
+		// Cell index determined by x, y, and z
+		int ix = x * dim;
+		int iy = y * dim;
+		int iz = z * dim;
+
+		// Put the value in the array
+		cells[ix][iy][iz] = vals[i];
 
 		// Move x, y, and z along the line
 		x += dx;

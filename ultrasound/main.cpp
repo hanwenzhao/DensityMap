@@ -103,7 +103,7 @@ int main() {
 	DensityMap grid(dim);
 
 	// (Optional) Adds a fan-shaped arrangement of cells to the volume map
-	sphereDemo(grid);
+	fanDemo(grid);
 
 	// Get the vertices from the volume map
 	// in a form useful to OpenGL
@@ -327,14 +327,14 @@ void fanDemo(DensityMap& grid) {
 
 	float r = 0.3;
 
-	for (; a2 <= 3; a2 += 0.05) {
+	for (; a2 <= 3; a2 += 0.01) {
 		float x = r * sin(a1) * cos(a2);
 		float y = r * sin(a1) * sin(a2);
 		float z = r * cos(a1);
 
 		std::vector<float> vals;
 
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < 1000; i++) {
 			vals.push_back(1);
 		}
 
