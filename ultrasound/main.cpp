@@ -103,7 +103,7 @@ int main() {
 	DensityMap grid(dim);
 
 	// (Optional) Adds a fan-shaped arrangement of cells to the volume map
-	fanDemo(grid);
+	sphereDemo(grid);
 
 	// Get the vertices from the volume map
 	// in a form useful to OpenGL
@@ -210,8 +210,10 @@ int main() {
 		// between -1 and 1 that OpenGL can use
 		glm::dmat4 projection = glm::perspective(glm::radians(cam.fov), double(SCR_WIDTH) / SCR_HEIGHT, 0.01, 500.0);
 		glm::dmat4 camView = cam.getViewMatrix();
-		glm::dmat4 model = glm::scale(glm::dmat4{}, glm::dvec3(10.0 / (grid.dim - 1), 10.0 / (grid.dim - 1), 10.0 / (grid.dim - 1)));
-		model = glm::translate(model, glm::dvec3(-(grid.dim - 1) / 2.0, -(grid.dim - 1) / 2.0, -(grid.dim - 1) / 2.0));
+
+		int dim = grid.getDim();
+		glm::dmat4 model = glm::scale(glm::dmat4{}, glm::dvec3(10.0 / (dim - 1), 10.0 / (dim - 1), 10.0 / (dim - 1)));
+		model = glm::translate(model, glm::dvec3(-(dim - 1) / 2.0, -(dim - 1) / 2.0, -(dim - 1) / 2.0));
 
 		// Drawing the volume map
 		cellShader.use();
@@ -294,16 +296,18 @@ void cursorPosMovementCallback(GLFWwindow* window, double xpos, double ypos) {
 void sphereDemo(DensityMap& grid) {
 	// Adds a sphere to the center of the volume map
 
-	for (int i = 0; i < grid.dim; i++) {
-		for (int j = 0; j < grid.dim; j++) {
-			for (int k = 0; k < grid.dim; k++) {
-				float xd = i - ((grid.dim - 1) / 2.0);
-				float yd = j - ((grid.dim - 1) / 2.0);
-				float zd = k - ((grid.dim - 1) / 2.0);
+	int dim = grid.getDim();
 
-				float mxd = (grid.dim - 1) / 2.0;
-				float myd = (grid.dim - 1) / 2.0;
-				float mzd = (grid.dim - 1) / 2.0;
+	for (int i = 0; i < dim; i++) {
+		for (int j = 0; j < dim; j++) {
+			for (int k = 0; k < dim; k++) {
+				float xd = i - ((dim - 1) / 2.0);
+				float yd = j - ((dim - 1) / 2.0);
+				float zd = k - ((dim - 1) / 2.0);
+
+				float mxd = (dim - 1) / 2.0;
+				float myd = (dim - 1) / 2.0;
+				float mzd = (dim - 1) / 2.0;
 
 				float distance = sqrt(xd * xd + yd * yd + zd * zd);
 				float maxDistance = sqrt(mxd * mxd + myd * myd + mzd * mzd);

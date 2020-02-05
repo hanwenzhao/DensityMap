@@ -256,6 +256,11 @@ std::vector<float> DensityMap::getDensities() {
 	return densities;
 }
 
+// Returns dim
+int DensityMap::getDim() {
+	return dim;
+}
+
 // Not being used right now, but maybe in the future
 // to get smoother shading
 float pointLineDistance(glm::vec3 a, glm::vec3 b, glm::vec3 v) {

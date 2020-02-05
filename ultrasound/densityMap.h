@@ -7,9 +7,11 @@
 // Class that stores the density readings
 // and other related info
 class DensityMap {
-public:
+private:
+	// This should never change after initialization
 	int dim;
 
+public:
 	// 3D array that stores the data
 	std::vector<std::vector<std::vector<float>>> cells;
 
@@ -40,6 +42,9 @@ public:
 
 	// Returns the cell densities
 	std::vector<float> getDensities();
+
+	// Returns dim
+	int getDim();
 };
 
 // Not being used right now, but maybe in the future
