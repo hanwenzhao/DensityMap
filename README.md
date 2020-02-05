@@ -14,6 +14,7 @@ The more values there are in vals, the smoother the line will be.
 <b>void addLineSmoothed(glm::vec3 p1, glm::vec3 p2, std::vector&lt;float&gt; vals, int radius = 5)</b>  
 Adds a line of data t othe array along the line segment defined by p1 and p2.
 The more values there are in vals, the smoother the line will be.
+The area around the line is blurred. This area will be larger when radius is increased.
 
 This function is not recommended when using a lot of data, because it blurs the area around the line.
 (like with ultrasound data !!!)
