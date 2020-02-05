@@ -52,7 +52,7 @@ Camera cam;
 
 int main() {
 	// Window title
-	std::string windowTitle = "Ultrasound";
+	std::string windowTitle = "Density Map";
 
 	// Initializing the OpenGL context
 	glfwInit();
